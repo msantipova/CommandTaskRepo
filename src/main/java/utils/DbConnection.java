@@ -19,7 +19,7 @@ public class DbConnection {
         connection.close();
     }
 
-    public static ResultSet sqlSelectQuery(String query) throws Exception {
+    public static ResultSet sqlSelectQuery(String query) throws SQLException {
         openConnection();
         PreparedStatement prep = connection.prepareStatement(query);
         ResultSet rs = prep.executeQuery();
@@ -29,10 +29,10 @@ public class DbConnection {
     }
 
 
-    public static void sqlDeleteQuery(String query) throws Exception {
+    public static void sqlDeleteRegion(int responseRegionId) throws SQLException {
         openConnection();
-        PreparedStatement prep = connection.
-                prepareStatement(query);
+        String sql = "DELETE FROM region WHERE id = " + responseRegionId;
+        PreparedStatement prep = connection.prepareStatement(sql);
         prep.executeUpdate();
         closeConnection();
     }

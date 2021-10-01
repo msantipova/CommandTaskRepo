@@ -4,53 +4,78 @@ import org.junit.jupiter.api.Test;
 import utils.DbConnection;
 import utils.GeneratHttpRequest;
 
-import java.util.Random;
+import java.sql.SQLException;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class RegionTest {
 
-    Random random = new Random();
-
     @Test
-    public void shouldCreateRegion() throws Exception {
-        String regionName = "Afrika_" + random.nextInt(100000000);
-        String body = "{\n" +
-                "  \"regionName\": \"" + regionName + "\"\n" +
-                "}";
+    public void shouldCreateRegion() throws SQLException {
+        //generat randome regionName
+        String regionName = GenerationRegion.generateRegionName();
+        //create new region
+        String body = "{\"regionName\": \"" + regionName + "\"" + "}";
+        // send request
         Response response = given().spec(GeneratHttpRequest.bodyRequest(body)).post("/regions");
+        //assert statusCode
         if (response.statusCode() != 201) {
-          //  assertFalse(true, "StatusCode is " + response.statusCode());
             fail("StatusCode is " + response.statusCode());
         } else {
-            String responseRegionId = response.jsonPath().get("id").toString();
+            int responseRegionId = response.jsonPath().get("id");
+            //asserts content
             assertAll(
-                    () -> assertEquals((Integer) response.jsonPath().get("id"),
+                    () -> assertEquals(responseRegionId,
                             DbConnection.sqlSelectQuery("SELECT id FROM region WHERE region_name='" + regionName + "'").getInt("id"), "id не совпадают"),
                     () -> assertEquals(response.jsonPath().get("regionName"),
                             DbConnection.sqlSelectQuery("SELECT region_name FROM region WHERE id='" + responseRegionId + "'").getString("region_name"), "name не совпадают")
             );
-            String sql = "DELETE FROM region WHERE id = "+ responseRegionId;
-           // System.out.println(sql);
-            DbConnection.sqlDeleteQuery(sql);
+            //clean testData
+            DbConnection.sqlDeleteRegion(responseRegionId);
         }
     }
 
     @Test
-    public void shouldGetAllRegion() throws Exception {
+    public void shouldGetAllRegions() throws SQLException {
+        //generat randome regionName
+        String regionName = GenerationRegion.generateRegionName();
         //insert new region
-        String regionName = "Afrika_" + random.nextInt(100000000);
         int responseRegionId = GenerationRegion.InsertRegion(regionName);
-        //get request, out response
+        //send request, out response
         Response response = given().spec(GeneratHttpRequest.noBodyRequest()).get("/regions");
-        //asserts
+        //asserts content
         assertAll(
                 () -> assertEquals(response.statusCode(), 200, "Метод упал"),
                 () -> assertTrue(response.jsonPath().getList("$").size() > 0, "список вернулся пустым")
         );
+        //clean testData
+        DbConnection.sqlDeleteRegion(responseRegionId);
+    }
 
-        String sql = "DELETE FROM region WHERE id = "+ responseRegionId;
-        DbConnection.sqlDeleteQuery(sql);
+    @Test
+    public void shouldGetRegion() throws SQLException {
+        //generat randome regionName
+        String regionName = GenerationRegion.generateRegionName();
+        //insert new region
+        int regionId = GenerationRegion.InsertRegion(regionName);
+        //send request, out response
+        Response response = given().spec(GeneratHttpRequest.noBodyRequest()).get("/regions/" + regionId);
+        //assert statusCode
+        if (response.statusCode() != 200) {
+            fail("StatusCode is " + response.statusCode());
+        } else {
+            int responseRegionId = response.jsonPath().get("id");
+            //asserts content
+            assertAll(
+                    () -> assertEquals(responseRegionId, regionId, "id не совпадают"),
+                    () -> assertEquals(response.jsonPath().get("regionName"), regionName, "name не совпадают")
+            );
+            //clean testData
+            DbConnection.sqlDeleteRegion(responseRegionId);
+        }
     }
 }

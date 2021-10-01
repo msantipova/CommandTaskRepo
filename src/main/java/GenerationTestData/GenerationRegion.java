@@ -3,6 +3,8 @@ package GenerationTestData;
 import io.restassured.response.ValidatableResponse;
 import utils.TokenGenerator;
 
+import java.util.Random;
+
 import static io.restassured.RestAssured.given;
 
 public class GenerationRegion {
@@ -24,5 +26,10 @@ public class GenerationRegion {
                 .when().post("/regions")
                 .then().statusCode(201);
         return response.extract().jsonPath().get("id");
+    }
+
+    public static String generateRegionName() {
+        Random random = new Random();
+        return "Afrika_" + random.nextInt(100000000);
     }
 }
