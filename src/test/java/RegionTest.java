@@ -1,3 +1,4 @@
+import GenerationTestData.GenerationRegion;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 import utils.DbConnection;
@@ -34,9 +35,12 @@ public class RegionTest {
 
     @Test
     public void shouldGetAllRegion() {
-
+        //insert new region
+        String regionName = "Afrika_" + random.nextInt(100000000);
+        GenerationRegion.InsertRegion(regionName);
+        //get request, out response
         Response response = given().spec(GeneratHttpRequest.noBodyRequest()).get("/regions");
-
+        //asserts
         assertAll(
                 () -> assertEquals(response.statusCode(), 200, "Метод упал"),
                 () -> assertTrue(response.jsonPath().getList("$").size() > 0, "список вернулся пустым")
