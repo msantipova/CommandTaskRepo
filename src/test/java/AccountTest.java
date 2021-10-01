@@ -6,8 +6,7 @@ import java.sql.ResultSet;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class AccountTest {
@@ -63,7 +62,7 @@ public class AccountTest {
         ResultSet log = DbConnection.sqlSelectQuery("SELECT * FROM jhi_user WHERE login='string88'");
         if (log.getRow() != 0) {
             assertEquals("string88", log.getString("login"));
-        } else assertTrue(false);
+        } else fail("не совпадос");
     }
 
 }

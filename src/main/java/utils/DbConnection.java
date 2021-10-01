@@ -24,7 +24,16 @@ public class DbConnection {
         PreparedStatement prep = connection.prepareStatement(query);
         ResultSet rs = prep.executeQuery();
         rs.next();
-        connection.close();
+        closeConnection();
         return rs;
+    }
+
+
+    public static void sqlDeleteQuery(String query) throws Exception {
+        openConnection();
+        PreparedStatement prep = connection.
+                prepareStatement(query);
+        prep.executeUpdate();
+        closeConnection();
     }
 }
