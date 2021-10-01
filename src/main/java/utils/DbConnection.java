@@ -1,6 +1,10 @@
 package utils;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DbConnection {
 
@@ -15,7 +19,7 @@ public class DbConnection {
         connection.close();
     }
 
-    public static ResultSet sqlQuery(String query) throws Exception {
+    public static ResultSet sqlSelectQuery(String query) throws Exception {
         openConnection();
         PreparedStatement prep = connection.prepareStatement(query);
         ResultSet rs = prep.executeQuery();

@@ -60,7 +60,7 @@ public class AccountTest {
                         "*/*")
                 .when().post("/register")
                 .then().statusCode(201);
-        ResultSet log = DbConnection.sqlQuery("SELECT * FROM jhi_user WHERE login='string88'");
+        ResultSet log = DbConnection.sqlSelectQuery("SELECT * FROM jhi_user WHERE login='string88'");
         if (log.getRow() != 0) {
             assertEquals("string88", log.getString("login"));
         } else assertTrue(false);

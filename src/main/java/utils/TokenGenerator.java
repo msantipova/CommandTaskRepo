@@ -7,7 +7,8 @@ public class TokenGenerator {
 
     /**
      * *
-     * @param log login
+     *
+     * @param log  login
      * @param pass password
      * @return token
      */

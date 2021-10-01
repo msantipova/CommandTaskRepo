@@ -3,14 +3,11 @@ package GenerationTestData;
 import io.restassured.response.ValidatableResponse;
 import utils.TokenGenerator;
 
-import java.util.Random;
-
 import static io.restassured.RestAssured.given;
 
 public class GenerationRegion {
-    public static int InsertRegion() {
-        Random random = new Random();
-        String regionName = "Afrika_" + random.nextInt(100000);
+    public static int InsertRegion(String regionName) {
+
         String body = "{\n" +
                 "  \"regionName\": \"" + regionName + "\"\n" +
                 "}";

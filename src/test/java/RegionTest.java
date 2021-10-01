@@ -1,56 +1,45 @@
-import GenerationTestData.GenerationRegion;
-import io.restassured.response.ValidatableResponse;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 import utils.DbConnection;
-import utils.TokenGenerator;
+import utils.GeneratHttpRequest;
 
 import java.util.Random;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RegionTest {
 
+    Random random = new Random();
+
     @Test
-    public void shouldCreateRegion() throws Exception {
-        Random random = new Random();
-        String regionName = "Afrika_" + random.nextInt(100000);
+    public void shouldCreateRegion() {
+        String regionName = "Afrika_" + random.nextInt(100000000);
         String body = "{\n" +
                 "  \"regionName\": \"" + regionName + "\"\n" +
                 "}";
-
-        ValidatableResponse response = given().baseUri("http://31.131.249.140")
-                .port(8080)
-                .basePath("/api")
-                .body(body)
-                .headers("Authorization", "Bearer " + TokenGenerator.createToken("admin", "u7ljdajLNo7PsVw7"),
-                        "Content-Type",
-                        "application/json",
-                        "Accept",
-                        "*/*")
-                .when().post("/regions")
-                .then().statusCode(201);
-        int regionId = response.extract().jsonPath().get("id");
-        int regionDbId = DbConnection.sqlQuery("SELECT id FROM region WHERE region_name='" + regionName + "'").getInt("id");
-        assertEquals(regionId, regionDbId);
+        Response response = given().spec(GeneratHttpRequest.bodyRequest(body)).post("/regions");
+        if (response.statusCode() != 201) {
+            assertFalse(true, "StatusCode is " + response.statusCode());
+        } else {
+            String responseRegionId = response.jsonPath().get("id").toString();
+            assertAll(
+                    () -> assertEquals((Integer) response.jsonPath().get("id"),
+                            DbConnection.sqlSelectQuery("SELECT id FROM region WHERE region_name='" + regionName + "'").getInt("id"), "id не совпадают"),
+                    () -> assertEquals(response.jsonPath().get("regionName"),
+                            DbConnection.sqlSelectQuery("SELECT region_name FROM region WHERE id='" + responseRegionId + "'").getString("region_name"), "name не совпадают")
+            );
+        }
     }
 
     @Test
-    public void shouldGetAllRegion() throws Exception {
-        int regionId = GenerationRegion.InsertRegion();
-        ValidatableResponse response = given().baseUri("http://31.131.249.140")
-                .port(8080)
-                .basePath("/api")
-                .headers("Authorization", "Bearer " + TokenGenerator.createToken("admin", "u7ljdajLNo7PsVw7"),
-                        "Content-Type",
-                        "application/json",
-                        "Accept",
-                        "*/*")
-                .when().get("/regions")
-                .then().statusCode(200);
+    public void shouldGetAllRegion() {
 
-        //int regionResponseId = response.extract().jsonPath().get("id");
-//        int regionDbId = DbConnection.sqlQuery("SELECT id FROM region WHERE region_name='" + regionName + "'").getInt("id");
-//        assertEquals(regionId, regionDbId);
+        Response response = given().spec(GeneratHttpRequest.noBodyRequest()).get("/regions");
+
+        assertAll(
+                () -> assertEquals(response.statusCode(), 200, "Метод упал"),
+                () -> assertTrue(response.jsonPath().getList("$").size() > 0, "список вернулся пустым")
+        );
     }
 }
